@@ -21,7 +21,7 @@ exit
 
 try {
 
-$internet = $(Invoke-WebRequest -uri google.fr).StatusCode
+$internet = $(Invoke-WebRequest -uri google.fr -UseBasicParsing).StatusCode
 if ($internet -ne 200) {
     exit
 }
