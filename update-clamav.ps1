@@ -1,6 +1,23 @@
-#rendre le script executable en tant qu'admin
-param([switch]$Elevated)
+<#
+###################################################################
+Script Name : update-clamav.ps1                                                                                           
+Version : 1.0                                                                                      
+Author : Paul Durieux                                               
+Email : paul.durieux@data-expertise.com                                           
+###################################################################
+#>
 
+#tetser si la scanisette peut joindre internet 
+try {
+
+$internet = $(Invoke-WebRequest -uri google.fr -UseBasicParsing).StatusCode
+if ($internet -ne 200) {
+    exit
+}
+
+} catch {exit}
+
+#rendre le script executable en tant qu'admin
 function Test-Admin {
   $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
   $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
@@ -18,17 +35,12 @@ if ((Test-Admin) -eq $false)  {
 exit
 }
 
-try {
-
-$internet = $(Invoke-WebRequest -uri google.fr -UseBasicParsing).StatusCode
-if ($internet -ne 200) {
-    exit
+if (!($(Test-Path "C:\temp\ClamAV"))) {
+  mkdir "C:\temp\ClamAV" -ea 0
 }
 
-} catch {exit}
-
 #variable d'environnements
-$tempdest=(Get-Childitem -Path Env:TEMP).Value + "\ClamAV"
+$tempdest="C:\temp\ClamAV"
 $targetprogramfiles=$env:ProgramFiles
 
 #VÃ©rifier la prÃ©cence du fichier temp
@@ -76,7 +88,7 @@ $r=iwr https://www.clamav.net/downloads#otherversions -UseBasicParsing -Headers 
   }
 
 #je filtre en rÃ©cupÃ©rant le href avec comme extension ".zip"
-$href=($r.Links |?{$_.href -match "\/downloads\/production\/clamav-[0-9].[0-9]{0,}.[0-9].win.x64.zip"}).href[0]
+$href=($r.Links |?{$_.href -match "(\/downloads\/production\/clamav-[0-9].[0-9]{0,}.[0-9].win.x64.zip(?!.*sig))"}).href[0]
 
 
 #je forme le lien de dl la derniÃ¨re version pour windows 64 bit
@@ -85,13 +97,33 @@ $links="https://www.clamav.net" + $href
 #actuelle version
 If ((Test-Path "$tempdest\actualversion.txt") -eq $True){$actualversion=Get-Content -Path "$tempdest\actualversion.txt"}
 
+ #stop des process clmad et freshclam
+    $process = (Get-Process | Where-Object {$_.ProcessName -match "clamd|freshclam"}).ProcessName
+    if ($process -ne $null){
+        foreach($service in $process){
+            Write-Output($service)
+        }
+    }
+
 #si ce n'est pas la derniÃ¨re version, il installe la derniÃ¨re version
 If (($actualversion -eq $links) -eq $False){
 
+    #stop des process clmad et freshclam
+    $process = (Get-Process | Where-Object {$_.ProcessName -match "clamd|freshclam"}).ProcessName
+    Write-Output($process)
+    if ($process -ne $null){
+        foreach($service in $process){
+            Stop-Process -Force -name $service
+        }
+    }
+
+    #attendre la fermeture du process clamd
+    Start-Sleep -Seconds 10
+
     #suppression des anciens fichiers de clamav
-    If ((Test-Path "$tempdest\clamav.zip") -eq $True) {Remove-Item "$tempdest\clamav.zip"}
-    If ((Test-Path "$tempdest\ClamAV") -eq $True) {Remove-Item "$tempdest\ClamAV" -Recurse}
-    If ((Test-Path "$targetprogramfiles\ClamAV") -eq $True) {Remove-Item "$targetprogramfiles\ClamAV" -Recurse}
+    If ((Test-Path "$tempdest\clamav.zip") -eq $True) {Remove-Item -Force -Path "$tempdest\clamav.zip"}
+    If ((Test-Path "$tempdest\ClamAV") -eq $True) {Remove-Item -Force -Path "$tempdest\ClamAV"}
+    If ((Test-Path "$targetprogramfiles\ClamAV") -eq $True) {Remove-Item -Force -Path "$targetprogramfiles\ClamAV" -Recurse}
 
     #request pour DL le .zip
     $Response=Invoke-WebRequest -Uri $links -Headers @{
@@ -142,32 +174,22 @@ If (($actualversion -eq $links) -eq $False){
     Set-Content -Path "$Filefresh" -Value $Content
     $content = Get-Content $Fileclamd | foreach { $_ -replace "Example","#Example" }
     Set-Content -Path "$Fileclamd" -Value $Content
+    $content = Get-Content $Fileclamd | foreach { $_ -replace "localhost","127.0.0.1" }
+    Set-Content -Path "$Fileclamd" -Value $Content
 
-    #execute freshclam.exe
-    $app = start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru
-    Start-Sleep -s 5
-    $v = Get-Process | where {$_.id -eq $app.id}
-
-    $cnt = 0
-
-    while(!($v -eq $null) -and $cnt -lt 30) {
-        Start-Sleep -s 60
-        $v = Get-Process | where {$_.id -eq $app.id}
-        if($cnt -eq 30) {
-            Stop-Process -Id $app.Id
-            Remove-Item "$tempdest\actualversion.txt"
-        }
-        $cnt += 1
-    }
-
-    if(!($v -eq $null)) {
-        Write-Output "running"
-    } else {
-        Write-Output "not running"
-    }
     #supression des actuelles fichiers pour gagner du stockage
     Remove-Item "$tempdest\clamav.zip"
     Remove-Item "$tempdest\ClamAV" -Recurse
+
+    #execute freshclam.exe
+    $app = start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru -Wait
+    
+    $servciesClamAV = @("clamd", "freshclam")
+    Set-Location 'C:\Program Files\ClamAV\'
+    foreach ($service in $servciesClamAV) {
+    Start-Process .\${service}.exe -ArgumentList "--install-service" -Wait
+    Set-Service -Name $service -Stat running -StartupType Automatic
+}
 }
 
 #stop process
