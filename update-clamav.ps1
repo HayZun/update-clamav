@@ -35,10 +35,6 @@ if ((Test-Admin) -eq $false)  {
 exit
 }
 
-if (!($(Test-Path "C:\temp\ClamAV"))) {
-  mkdir "C:\temp\ClamAV" -ea 0
-}
-
 #variable d'environnements
 $tempdest="C:\temp\ClamAV"
 $targetprogramfiles=$env:ProgramFiles
