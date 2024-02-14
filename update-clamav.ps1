@@ -170,14 +170,8 @@ If (($actualversion -eq $links) -eq $False) {
     Remove-Item "$tempdest\ClamAV" -Recurse
 
     #execute freshclam.exe
-    $app = start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru -Wait
-    
-    $servciesClamAV = @("clamd", "freshclam")
-    Set-Location 'C:\Program Files\ClamAV\'
-    foreach ($service in $servciesClamAV) {
-        Start-Process .\${service}.exe -ArgumentList "--install-service" -Wait
-        Set-Service -Name $service -Stat running -StartupType Automatic
-    }
+    Start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru -Wait
+    Start-Process -FilePath "$targetprogramfiles\ClamAV\clamd.exe" -Verb RunAs -PassThru -Wait
 }
 
 #stop process
