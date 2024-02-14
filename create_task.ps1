@@ -76,4 +76,3 @@ Start-Sleep -Seconds 5
 
 #Stop the Process
 Stop-Process -Id $PID
-```

@@ -93,14 +93,6 @@ $links = "https://www.clamav.net" + $href
 #actuelle version
 If ((Test-Path "$tempdest\actualversion.txt") -eq $True) { $actualversion = Get-Content -Path "$tempdest\actualversion.txt" }
 
-#stop des process clmad et freshclam
-$process = (Get-Process | Where-Object { $_.ProcessName -match "clamd|freshclam" }).ProcessName
-if ($process -ne $null) {
-    foreach ($service in $process) {
-        Write-Output($service)
-    }
-}
-
 #si ce n'est pas la derniÃ¨re version, il installe la derniÃ¨re version
 If (($actualversion -eq $links) -eq $False) {
 
