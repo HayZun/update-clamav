@@ -39,7 +39,7 @@ Check-RunAsAdministrator
 
 # Chemin du script update-clamav.ps1
 $currentUser = $env:USERNAME
-$pathInstallTaskClamav = "C:\Users\$currentUser\Downloads\update-clamav-main\update-clamav.ps1"
+$pathInstallTaskClamav = "C:\Users\$currentUser\Downloads\update-clamav-main\update-clamav-main\update-clamav.ps1"
 
 # déplacer le script .\update-clamav.ps1 dans C:\Scripts
 Copy-Item -Path $pathInstallTaskClamav -Destination "C:\Scripts\update-clamav.ps1" -Force
@@ -61,3 +61,19 @@ Register-ScheduledTask -TaskName $taskname -Action $taskaction -Trigger $tasktri
 
 #Start the task now
 Start-ScheduledTask -TaskName $taskname
+
+#Vérifier que la tâche planifiée a bien été créée
+$task = Get-ScheduledTask -TaskName $taskname
+
+if ($task) {
+  Write-Host "Scheduled Task $taskname created successfully"
+}
+else {
+  Write-Host "Failed to create Scheduled Task $taskname"
+}
+
+Start-Sleep -Seconds 5
+
+#Stop the Process
+Stop-Process -Id $PID
+```
