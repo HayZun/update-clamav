@@ -41,6 +41,11 @@ Check-RunAsAdministrator
 $currentUser = $env:USERNAME
 $pathInstallTaskClamav = "C:\Users\$currentUser\Downloads\update-clamav-main\update-clamav-main\update-clamav.ps1"
 
+# Crée le répertoire C:\Scripts
+if (!($(Test-Path "C:\Scripts"))) {
+  mkdir "C:\Scripts" -ea 0
+}
+
 # déplacer le script .\update-clamav.ps1 dans C:\Scripts
 Copy-Item -Path $pathInstallTaskClamav -Destination "C:\Scripts\update-clamav.ps1" -Force
 
