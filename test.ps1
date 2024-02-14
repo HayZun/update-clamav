@@ -33,3 +33,6 @@ Check-RunAsAdministrator
  
 #Place your script here.
 write-host "Welcome"
+
+#make a pause
+Start-Sleep -Seconds 10

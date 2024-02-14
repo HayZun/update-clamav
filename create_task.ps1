@@ -7,22 +7,46 @@ Email : paul.durieux@data-expertise.com
 ###################################################################
 #>
 
-#Obtenir les droits d'administration
-Start-Process PowerShell -Verb RunAs -ArgumentList "-File `"$PSCommandPath`""
-
-# Attend que le processus exécuté en tant qu'administrateur termine avant de continuer
-Start-Sleep -Seconds 5
+Function Check-RunAsAdministrator() {
+  #Get current user context
+  $CurrentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
+  
+  #Check user is running the script is member of Administrator Group
+  if ($CurrentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
+    Write-host "Script is running with Administrator privileges!"
+  }
+  else {
+    #Create a new Elevated process to Start PowerShell
+    $ElevatedProcess = New-Object System.Diagnostics.ProcessStartInfo "PowerShell";
+ 
+    # Specify the current script path and name as a parameter
+    $ElevatedProcess.Arguments = "& '" + $script:MyInvocation.MyCommand.Path + "'"
+ 
+    #Set the Process to elevated
+    $ElevatedProcess.Verb = "runas"
+ 
+    #Start the new elevated process
+    [System.Diagnostics.Process]::Start($ElevatedProcess)
+ 
+    #Exit from the current, unelevated, process
+    Exit
+ 
+  }
+}
+ 
+#Check Script is running with Elevated Privileges
+Check-RunAsAdministrator
 
 # Chemin du script update-clamav.ps1
 $currentUser = $env:USERNAME
-$pathInstallTaskClamav = "C:\Utilisateurs\$currentUser\Downloads\update-clamav-main\update-clamav.ps1"
+$pathInstallTaskClamav = "C:\Users\$currentUser\Downloads\update-clamav-main\update-clamav.ps1"
 
 # déplacer le script .\update-clamav.ps1 dans C:\Scripts
 Copy-Item -Path $pathInstallTaskClamav -Destination "C:\Scripts\update-clamav.ps1" -Force
 
 #créer le répertoire C:\temp\ClamAV
 if (!($(Test-Path "C:\temp\ClamAV"))) {
-    mkdir "C:\temp\ClamAV" -ea 0
+  mkdir "C:\temp\ClamAV" -ea 0
 }
 
 # Créer la tâche planifiée pour mettre à jour ClamAV
