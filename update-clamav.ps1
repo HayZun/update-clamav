@@ -168,9 +168,17 @@ If (($actualversion -eq $links) -eq $False) {
     Remove-Item "$tempdest\clamav.zip"
     Remove-Item "$tempdest\ClamAV" -Recurse
 
-    #execute freshclam.exe
-    start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru -Wait
-    Start-Process -FilePath "$targetprogramfiles\ClamAV\clamd.exe" -Verb RunAs -PassThru -Wait
+    # Installation de clamd comme démon
+    Start-Process -FilePath "$targetprogramfiles\ClamAV\clamd.exe" -ArgumentList "--install" -Verb RunAs -Wait
+
+    # Installation de freshclam
+    Start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Wait
+
+    # Modifier le service clamd pour qu'il dÃ©marre automatiquement au dÃ©marrage
+    Set-Service -Name "clamd" -StartupType Automatic
+
+    # Démarrer le service clamd
+    Start-Service -Name "clamd"
 }
 
 #stop process
