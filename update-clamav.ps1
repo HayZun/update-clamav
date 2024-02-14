@@ -98,7 +98,6 @@ If (($actualversion -eq $links) -eq $False) {
 
     #stop des process clmad et freshclam
     $process = (Get-Process | Where-Object { $_.ProcessName -match "clamd|freshclam" }).ProcessName
-    Write-Output($process)
     if ($process -ne $null) {
         foreach ($service in $process) {
             Stop-Process -Force -name $service
@@ -114,7 +113,7 @@ If (($actualversion -eq $links) -eq $False) {
     If ((Test-Path "$targetprogramfiles\ClamAV") -eq $True) { Remove-Item -Force -Path "$targetprogramfiles\ClamAV" -Recurse }
 
     #request pour DL le .zip
-    $Response = Invoke-WebRequest -Uri $links -Headers @{
+    Invoke-WebRequest -Uri $links -Headers @{
         "method"                    = "GET"
         "authority"                 = "www.clamav.net"
         "scheme"                    = "https"
@@ -170,7 +169,7 @@ If (($actualversion -eq $links) -eq $False) {
     Remove-Item "$tempdest\ClamAV" -Recurse
 
     #execute freshclam.exe
-    Start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru -Wait
+    start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Verb RunAs -PassThru -Wait
     Start-Process -FilePath "$targetprogramfiles\ClamAV\clamd.exe" -Verb RunAs -PassThru -Wait
 }
 
