@@ -8,15 +8,13 @@ Email : paul.durieux@data-expertise.com
 #>
 
 #Obtenir les droits d'administration
-if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-  Write-Warning "Vous n'avez pas les droits d'administration pour exécuter ce script !"
-  Write-Warning "Relancez ce script en tant qu'administrateur !"
-  Break
-}
+Start-Process PowerShell -Verb RunAs -ArgumentList "-File `"$PSCommandPath`""
 
-$currentUser = $env:USERNAME
+# Attend que le processus exécuté en tant qu'administrateur termine avant de continuer
+Start-Sleep -Seconds 5
 
 # Chemin du script update-clamav.ps1
+$currentUser = $env:USERNAME
 $pathInstallTaskClamav = "C:\Utilisateurs\$currentUser\Downloads\update-clamav-main\update-clamav.ps1"
 
 # déplacer le script .\update-clamav.ps1 dans C:\Scripts
@@ -24,7 +22,7 @@ Copy-Item -Path $pathInstallTaskClamav -Destination "C:\Scripts\update-clamav.ps
 
 #créer le répertoire C:\temp\ClamAV
 if (!($(Test-Path "C:\temp\ClamAV"))) {
-  mkdir "C:\temp\ClamAV" -ea 0
+    mkdir "C:\temp\ClamAV" -ea 0
 }
 
 # Créer la tâche planifiée pour mettre à jour ClamAV
