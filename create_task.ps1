@@ -8,7 +8,10 @@ Email : paul.durieux@data-expertise.com
 #>
 
 #déplacer le script .\update-clamav.ps1 dans C:\Scripts
-Copy-Item -Path .\update-clamav.ps1 -Destination "C:\Scripts\update-clamav.ps1" -Force
+$currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+$pathInstallTaskClamav = "C:\Users\$currentUser\Downloads\update-clamav-main\update-clamav.ps1"
+
+Copy-Item -Path $pathInstallTaskClamav -Destination "C:\Scripts\update-clamav.ps1" -Force
 
 #créer le répertoire C:\temp\ClamAV
 if (!($(Test-Path "C:\temp\ClamAV"))) {
