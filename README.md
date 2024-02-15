@@ -8,5 +8,5 @@ Avoir l'éxécution de scripts désactivé sur le système :
 
 ## Instructions
 
-1. Téléchargez et extrayez l'archive clamav_install.zip.
+1. Téléchargez et extrayez l'archive.
 2. Cliquez-droit sur le fichier start.bat
