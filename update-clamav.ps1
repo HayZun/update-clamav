@@ -113,7 +113,11 @@ If (($actualversion -eq $links) -eq $False) {
     If ((Test-Path "$targetprogramfiles\ClamAV") -eq $True) { Remove-Item -Force -Path "$targetprogramfiles\ClamAV" -Recurse }
 
     #suppresion du service clamd (if powerShell 6 => Remove-Service)
-    If ($null -ne (Get-Service -Name "clamd")) { sc.exe delete clamd }
+    $serviceClamd = Get-Service -Name "clamd"
+
+    if ($null -ne $serviceClamd) {
+        sc.exe delete clamd
+    }
 
     #request pour DL le .zip
     Invoke-WebRequest -Uri $links -Headers @{
