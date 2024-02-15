@@ -37,28 +37,6 @@ Function Check-RunAsAdministrator() {
 #Check Script is running with Elevated Privileges
 Check-RunAsAdministrator
 
-# Chemin du script update-clamav.ps1
-$currentUser = $env:USERNAME
-
-# Obtenez le chemin absolu du répertoire actuel
-$currentDirectory = $PWD.Path
-
-# Chemin du script update-clamav.ps1
-$pathInstallTaskClamav = "$currentDirectory\update-clamav.ps1"
-
-# Crée le répertoire C:\Scripts
-if (!($(Test-Path "C:\Scripts"))) {
-  mkdir "C:\Scripts" -ea 0
-}
-
-# déplacer le script .\update-clamav.ps1 dans C:\Scripts
-Copy-Item -Path $pathInstallTaskClamav -Destination "C:\Scripts\update-clamav.ps1" -Force
-
-#créer le répertoire C:\temp\ClamAV
-if (!($(Test-Path "C:\temp\ClamAV"))) {
-  mkdir "C:\temp\ClamAV" -ea 0
-}
-
 # Créer la tâche planifiée pour mettre à jour ClamAV
 $taskname = "ClamAV Update"
 $taskdescription = "Update ClamAV"
