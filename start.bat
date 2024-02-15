@@ -16,6 +16,6 @@ move "%CD%\update-clamav.ps1" "C:\Scripts"
 
 
 REM Run the PowerShell script
-powershell -ExecutionPolicy Bypass -File "%CD%\c
+powershell -ExecutionPolicy Bypass -File "%CD%\create_task.ps1"
 
 ```
