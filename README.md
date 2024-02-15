@@ -2,7 +2,7 @@
 
 ## Prérequis
 
-Avoir l'éxécution de scripts activé sur le système :
+Avoir l'éxécution de scripts désactivé sur le système :
 
 `Set-ExecutionPolicy -ExecutionPolicy Unrestricted`
 
