@@ -39,7 +39,12 @@ Check-RunAsAdministrator
 
 # Chemin du script update-clamav.ps1
 $currentUser = $env:USERNAME
-$pathInstallTaskClamav = "C:\Users\$currentUser\Downloads\update-clamav-main\update-clamav-main\update-clamav.ps1"
+
+# Obtenez le chemin absolu du répertoire actuel
+$currentDirectory = $PWD.Path
+
+# Chemin du script update-clamav.ps1
+$pathInstallTaskClamav = "$currentDirectory\update-clamav.ps1"
 
 # Crée le répertoire C:\Scripts
 if (!($(Test-Path "C:\Scripts"))) {
