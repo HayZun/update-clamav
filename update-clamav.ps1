@@ -26,7 +26,7 @@ function Test-Admin {
 
 if ((Test-Admin) -eq $false) {
     if ($elevated) {
-        #essayÃ© d'Ã©lever
+        #essaye d'elever
     } 
     else {
         Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
@@ -39,10 +39,10 @@ if ((Test-Admin) -eq $false) {
 $tempdest = "C:\temp\ClamAV"
 $targetprogramfiles = $env:ProgramFiles
 
-#VÃ©rifier la prÃ©cence du fichier temp
+#Verifier la precence du fichier temp
 If ((Test-Path $tempdest) -eq $False) { New-Item $tempdest -itemType Directory }
 
-#rÃ©cupÃ©rer le cookie
+#recuperer le cookie
 $Request = Invoke-WebRequest https://www.clamav.net/ -Method 'GET' -Headers @{
     "method"                    = "GET"
     "authority"                 = "www.clamav.net"
@@ -64,7 +64,7 @@ $Request = Invoke-WebRequest https://www.clamav.net/ -Method 'GET' -Headers @{
 $cookie, $bin = $Request.Headers["Set-Cookie"] -split ";", 2
 $realcookie = "_ga=GA1.2.684229815.1629827059; _gid=GA1.2.657091150.1629827059; " + $cookie
 
-#je rÃ©cupÃ¨re tous les HREF
+#je recupere tous les HREF
 $r = iwr https://www.clamav.net/downloads#otherversions -UseBasicParsing -Headers @{
     "method"                    = "GET"
     "authority"                 = "www.clamav.net"
@@ -83,17 +83,17 @@ $r = iwr https://www.clamav.net/downloads#otherversions -UseBasicParsing -Header
     "cookie"                    = $realcookie
 }
 
-#je filtre en rÃ©cupÃ©rant le href avec comme extension ".zip"
+#je filtre en recuperant le href avec comme extension ".zip"
 $href = ($r.Links | ? { $_.href -match "(\/downloads\/production\/clamav-[0-9].[0-9]{0,}.[0-9].win.x64.zip(?!.*sig))" }).href[0]
 
 
-#je forme le lien de dl la derniÃ¨re version pour windows 64 bit
+#je forme le lien de dl la derniere version pour windows 64 bit
 $links = "https://www.clamav.net" + $href
 
 #actuelle version
 If ((Test-Path "$tempdest\actualversion.txt") -eq $True) { $actualversion = Get-Content -Path "$tempdest\actualversion.txt" }
 
-#si ce n'est pas la derniÃ¨re version, il installe la derniÃ¨re version
+#si ce n'est pas la derniere version, il installe la derniere version
 If (($actualversion -eq $links) -eq $False) {
 
     #stop des process clmad et freshclam
@@ -115,6 +115,7 @@ If (($actualversion -eq $links) -eq $False) {
     #suppresion du service clamd (if powerShell 6 => Remove-Service)
     $serviceClamd = Get-Service -Name "clamd"
 
+    # si le service clamd existe, le supprimer
     if ($null -ne $serviceClamd) {
         sc.exe delete clamd
     }
@@ -148,16 +149,16 @@ If (($actualversion -eq $links) -eq $False) {
     #copie de l'archive
     Copy-Item -Path "$tempdest\ClamAV\$file" -Destination "$targetprogramfiles\ClamAV" -Force -Recurse
 
-    #crÃ©ation d'un fichier.txt le lien utilisÃ© pour DL
+    #creation d'un fichier.txt le lien utilise pour DL
     If ((Test-Path "$tempdest\actualversion.txt") -eq $False) { New-Item "$tempdest\actualversion.txt" -type file }
 
     #suppression du fichier actualversion
     If ((Test-Path "$tempdest\actualversion.txt") -eq $True) { Remove-Item "$tempdest\actualversion.txt" }
 
-    #Ã©criture dans le fichier
+    #ecriture dans le fichier
     ADD-content -path "$tempdest\actualversion.txt" -value $links
 
-    #actions_supplÃ©mntaires, Ã©criture des .conf
+    #actions_supplemntaires, ecriture des .conf
     Copy-Item -PAth "$targetprogramfiles\ClamAV\conf_examples\freshclam.conf.sample" -Destination "$targetprogramfiles\ClamAV\freshclam.conf" -Force -Recurse
     Copy-Item -PAth "$targetprogramfiles\ClamAV\conf_examples\clamd.conf.sample" -Destination "$targetprogramfiles\ClamAV\clamd.conf" -Force -Recurse
 
@@ -181,7 +182,7 @@ If (($actualversion -eq $links) -eq $False) {
     # Installation de freshclam
     Start-process -FilePath "$targetprogramfiles\ClamAV\freshclam.exe" -Wait
 
-    # Modifier le service clamd pour qu'il dÃ©marre automatiquement au dÃ©marrage
+    # Modifier le service clamd pour qu'il demarre automatiquement au demarrage
     Set-Service -Name "clamd" -StartupType Automatic
 
     # Démarrer le service clamd
