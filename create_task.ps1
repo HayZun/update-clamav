@@ -37,6 +37,8 @@ Function Check-RunAsAdministrator() {
 #Check Script is running with Elevated Privileges
 Check-RunAsAdministrator
 
+$currentUser = $env:USERNAME
+
 # Créer la tâche planifiée pour mettre à jour ClamAV
 $taskname = "ClamAV Update"
 $taskdescription = "Update ClamAV"
